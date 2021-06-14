@@ -1,0 +1,89 @@
+﻿@model IEnumerable<WebExpenseBook.Models.WebJsonCategory>
+@{
+    ViewBag.Title = "SPAコントロール";
+}
+<h2>@ViewBag.Title</h2>
+<div class="web-curb">false</div>   @*ページ遷移の抑制用*@
+<div class="container" style="background-color:cornflowerblue">
+    <ul id="webMainTab" class="nav nav-tabs" role="tablist">
+        <li class="nav-item mt-1" role="presentation">
+            <button id="webInputTab" class="nav-link active" data-toggle="tab"
+                    data-target="#webInput" type="button" role="tab" aria-controls="webInput" aria-selected="true">
+                入力
+            </button>
+        </li>
+        <li class="nav-item mt-1" role="presentation">
+            <button id="webMonthlyTab" class="nav-link" data-toggle="tab"
+                    data-target="#webMonthly" type="button" role="tab" aria-controls="webMonthly" aria-selected="false">
+                月次
+            </button>
+        </li>
+    </ul>
+    <div id="webMainTabContent" class="tab-content border-bottom border-start border-end">
+        <div id="webInput" class="tab-pane active" role="tabpanel" aria-labelledby="webInputTab">
+            <div class="container-md  mb-3">
+                <div class="row" style="background-color:aqua">
+                    <div class="col">
+                        <label for="webAvailableDate" class="form-label">購入日</label>
+                        <input type="date" class="form-control web-require web-strict" id="webAvailableDate" aria-describedby="webAvailableDateHelp">
+                        <div id="webAvailableDateHelp" class="form-text">購入した日付を入れてください</div>
+                    </div>
+                    <div class="col" id="webDiv0">
+                        <label for="webCategoryD0" class="form-label">勘定科目</label>
+                        <input type="search" class="form-control web-require web-strict" id="webCategoryD0" placeholder="区分名">
+                        <div class="btn-group dropend">
+                            <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                                一覧から選ぶ
+                            </button>
+                            <ul class="dropdown-menu" id="webCategoryListD0">
+                                @foreach (var item in Model)
+                                {
+                                    <li><a class="dropdown-item web-is-item-text" web-item-text-target="webCategoryD0" href="#">@item.CategoryName</a></li>
+                                }
+                            </ul>
+                            <button type="button" class="btn btn-primary ml-1 web-commit-btn" web-item-text-target="webCategoryD0">科目確定</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="row" style="background-color:aquamarine">
+                    <div class="col">
+                        <label for="webMainItem" class="form-label">品名</label>
+                        <input type="search" class="form-control web-require web-strict" id="webMainItem" placeholder="品名">
+                        <div class="btn-group dropend">
+                            <button type="button" id="webMainItemButton" class="btn btn-secondary dropdown-toggle web-dummy-button mb-1" data-toggle="dropdown" aria-expanded="false">
+                                一覧から選ぶ
+                            </button>
+                            <ul class="dropdown-menu web-item-list">
+                                <li><a class="dropdown-item web-is-item-textn" web-item-text-target="webMainItem" href="#">候補なし</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <label for="webItemPrice" class="form-label">購入金額</label>
+                        <input type="number" class="form-control web-require web-strict" id="webItemPrice" aria-describedby="webAvailablePriceHelp">
+                        <div class="web-error">整数のみ入力できます</div>
+                        <div id="webAvailablePriceHelp" class="form-text">購入した金額を入れてください</div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <div class="mt-1">
+                            <button type="button" class="btn btn-primary ml-1 web-clear-btn">クリア</button>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="bg-success web-result-text">登録を行いました</div>
+                    </div>
+                    <div class="col">
+                        <div class="text-right mt-1">
+                            <button type="button" class="btn btn-primary ml-1 web-register-btn">品目確定</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="webMonthly" class="tab-pane" role="tabpanel" aria-labelledby="webMonthlyTab">
+            <p>こちらは月次を表示する</p>
+        </div>
+    </div>
+</div>

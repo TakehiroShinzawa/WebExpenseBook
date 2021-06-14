@@ -9,18 +9,17 @@
     @Scripts.Render("~/bundles/modernizr")
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-        <a class="navbar-brand" href="#">
-            Bootstrap5.0
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+        <a class="navbar-brand" href="https://bootstrap-guide.com/">
+            Bootstrap4.6
         </a>
-        <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarNav"  aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav mr-auto">
-                <li class="nav-item">@Html.ActionLink("ホーム", "Index", "Home", null, new { @class = "nav-link active" })</li>
-                <li class="nav-item">@Html.ActionLink("詳細", "About", "Home", null, new { @class = "nav-link active" })</li>
-                <li class="nav-item">@Html.ActionLink("問い合わせ", "Contact", "Home", null, new { @class = "nav-link active" })</li>
+                <li class="nav-item"><a class="nav-link active" href="/Home/Index">ホーム</a></li>
+                <li class="nav-item">@Html.ActionLink("経費帳", "Input", "Home", null, new { @class = "nav-link active" })</li>
             </ul>
         </div>
     </nav>
@@ -33,7 +32,8 @@
     </div>
 
     @Scripts.Render("~/bundles/jquery")
-    <script src="/Scripts/bootstrap.js"></script>
+    @Scripts.Render("~/bundles/bootstrap")
+    @Scripts.Render("~/bundles/myjs")
     @RenderSection("scripts", required: false)
 </body>
 </html>

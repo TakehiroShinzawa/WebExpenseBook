@@ -22,3 +22,27 @@ select,
 textarea {
     max-width: 280px;
 }
+
+/*ページ遷移の抑制をする*/
+.web-curb {
+    visibility:hidden;
+}
+
+/*処理結果表示*/
+.web-result-text {
+    display: none;
+}
+/*エラーの制御*/
+/* デフォルトでは非表示 */
+.web-error {
+    display: none;
+}
+/* 隣接セレクタで
+ * input:invalidの隣の
+ * エラーメッセージは表示する
+ */
+input:invalid + .web-error {
+    display: block;
+    color: red;
+    font-size: 0.9em;
+}

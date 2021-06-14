@@ -2,30 +2,18 @@
     ViewBag.Title = "Home Page";
 }
 
-<div class="jumbotron">
-    <h1>ASP.NET</h1>
-    <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
-    <p><a href="https://asp.net" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
+<div class="container">
+    <div class="bg-light p-3 p-sm-5 my-4 rounded" style="background:url(@Url.Content(ViewBag.BackImage)) center no-repeat;background-size: cover;">
+        <h1 class="display-4">ASP.NET MVC SPA</h1>
+        <p class="lead">SPAと言っても、厳密に一ページで作成必要は無いと思います。</p>
+        <p class="lead">機能単位でページ遷移が無ければ要件的に満たすと思うので</p>
+        <hr class="my-4" />
+        <p>ブートスラップ５．０を適用するつもりでしたが、スクリプトのレンダー処理がエラーで落ちちゃいます</p>
+        <p>残念ながら諦めました</p>
+        <a class="btn btn-primary btn-lg" href="#" role="button">もっと学ぼう</a>
+    </div>
+    <h1 class="mt-2">ブランド</h1>
+    <p>ここにサイトの文章を入れる</p>
 </div>
 
-<div class="row">
-    <div class="col-md-4">
-        <h2>Getting started</h2>
-        <p>
-            ASP.NET MVC gives you a powerful, patterns-based way to build dynamic websites that
-            enables a clean separation of concerns and gives you full control over markup
-            for enjoyable, agile development.
-        </p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301865">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Get more libraries</h2>
-        <p>NuGet is a free Visual Studio extension that makes it easy to add, remove, and update libraries and tools in Visual Studio projects.</p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301866">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Web Hosting</h2>
-        <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301867">Learn more &raquo;</a></p>
-    </div>
-</div>
+
