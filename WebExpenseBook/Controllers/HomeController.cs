@@ -14,11 +14,77 @@ namespace WebExpenseBook.Controllers
     public class HomeController : Controller
     {
         private MainContext db = new MainContext();
+
+        [HttpPost]
+        public async Task<ActionResult> JsonDeleteItem(int ItemId)
+        {
+            string sql = "";
+            using (var transaction = db.Database.BeginTransaction())
+            {
+                try
+                {
+                    var Now = DateTime.Now;
+                    sql = "update MainItems set IsDeleted = 1, UpdateAt = @Now where Id = @ItemId";
+                    await db.Database.ExecuteSqlCommandAsync(sql, new SqlParameter("@Now", Now), new SqlParameter("@ItemId", ItemId));
+                    sql = "update Categories set IsDeleted = 1, UpdateAt = @Now where MainItemId = @ItemId";
+                    await db.Database.ExecuteSqlCommandAsync(sql, new SqlParameter("@Now", Now), new SqlParameter("@ItemId", ItemId));
+                    transaction.Commit();
+                }
+                catch (Exception e)
+                {
+                    Debug.WriteLine(e.Message);
+                    transaction.Rollback();
+                }
+            }
+            return Json(false);
+        }
+        [HttpPost]
+        public ActionResult JsonGetCategoryPrice(int Depth, DateTime StartDate, DateTime EndDate, string TargetCategory)
+        {
+            var UserIp = Request.UserHostAddress;
+            string sql = "";
+
+            if (Depth == 0)
+            {
+                if (string.IsNullOrEmpty(TargetCategory))
+                    TargetCategory = "NONE";
+                //var sql = $"select distinct CategoryName from Categories C inner join MainItems M on M.OwnerName = @OwnerName and M.Id = C.MainItemId where C.CategoryDepth = @Depth";
+                sql = "select C.CategoryName, sum( M.ItemPrice ) CategotyPrice " +
+                         "from MainItems M left join Categories C on C.MainItemId = M.Id " +
+                         "where /*M.OwnerName = @OwnerName and */ M.ItemDate between  @StartDate and @EndDate and M.IsDeleted = 0 and " +
+                         "C.CategoryDepth = @Depth " +
+                         "group by C.CategoryName";
+            }
+            else
+            {
+                sql = "select C.CategoryName, sum( M.ItemPrice ) CategotyPrice " +
+                          "from MainItems M left join Categories C on C.MainItemId = M.Id " +
+                          "where /*M.OwnerName = @OwnerName and */ M.ItemDate between  @StartDate and @EndDate and M.IsDeleted = 0 and " +
+                          "C.CategoryDepth = @Depth and C.ParentName = @ParentCategory " +
+                          "group by C.CategoryName";
+            }
+            var dat = db.Database.SqlQuery<WebJsonCategoryPrice>(sql, new SqlParameter("@OwnerName", UserIp), new SqlParameter("@Depth", Depth),
+               new SqlParameter("@StartDate", StartDate), new SqlParameter("@EndDate", EndDate), new SqlParameter("@ParentCategory", TargetCategory));
+            var dd = dat.ToList();
+            if (Depth == 0 || dd.Count != 0)
+                return Json(dd);    //カテゴリーがあったら返す
+            //残りはアイテムのはずなので、アイテムを返す
+            sql = "select M.Id ItemId, CONVERT(VARCHAR, M.ItemDate,111) as ItemDate,  M.ItemName, M.ItemPrice from MainItems M left join Categories C on C.MainItemId = M.Id " +
+                    "where /*M.OwnerName = @OwnerName and */ C.CategoryDepth = @Depth and M.IsDeleted = 0 and C.CategoryName = @Category order by  M.ItemDate";
+            var Items = db.Database.SqlQuery<WebJsonItemList>(sql, new SqlParameter("@OwnerName", UserIp), new SqlParameter("@Depth", --Depth),
+                new SqlParameter("@StartDate", StartDate), new SqlParameter("@EndDate", EndDate), new SqlParameter("@Category", TargetCategory));
+            var ItemsResult = Items.ToList();
+            return Json(ItemsResult);
+        }
+
+
         [HttpPost]
         public async Task<ActionResult> JsonRegster(WebJsonItem mainitem)
         {
             var UserIp = Request.UserHostAddress;
             //メインアイテムを登録する
+            //時間の指定が午前０時だと何かと都合が悪いので12時に変更
+            mainitem.ItemDate.AddHours(12);
             var MainItem = new MainItem()
             {
                 ItemDate = mainitem.ItemDate,

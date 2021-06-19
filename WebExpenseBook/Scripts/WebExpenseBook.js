@@ -1,4 +1,195 @@
-﻿$(function () {
+﻿
+$(function () {
+
+    //集計に関するスクリプト
+
+    //日付から文字列に変換する関数
+    function toLocaleString(date) {
+        return [
+            date.getFullYear(),
+            ('0' + (date.getMonth() + 1)).slice(-2),
+            ('0' + date.getDate()).slice(-2)
+        ].join('-') + ' '
+            + date.toLocaleTimeString();
+    }
+    function DateStarEnd(StartDate, EndDate) {
+        StartDate.setHours(0);
+        StartDate.setMinutes(0);
+        StartDate.setSeconds(0);
+        EndDate.setHours(23);
+        EndDate.setMinutes(59);
+        EndDate.setSeconds(59);
+    }
+    function GetTerm(TargetMonth) {
+        var StartDate = new Date(TargetMonth);
+        StartDate.setDate(1);
+        var EndDate = TargetMonth;
+        EndDate.setMonth(EndDate.getMonth() + 1);
+        EndDate.setDate(0);
+        DateStarEnd(StartDate, EndDate);
+        //開始終了の保存
+        $('#webCalcStart').val(toLocaleString(StartDate));
+        $('#webCalcEnd').val(toLocaleString(EndDate));
+        return TargetMonth.getFullYear() + '年' + (TargetMonth.getMonth() + 1) + '月度';
+    }
+
+    //保存してある日付でデータを取得
+    function GetInitalData() {
+        //勘定科目の羅列
+        //Ajax で転送し、返事をもらう
+        //Jonsonデータを作成
+        var data = { Depth: 0, StartDate: new Date($('#webCalcStart').val()), EndDate: new Date($('#webCalcEnd').val()) };
+        $.ajax(
+            {
+                url: '/Home/JsonGetCategoryPrice',
+                type: 'POST',
+                data: JSON.stringify(data),   // JSONの文字列に変換,   // Depthを取得
+                contentType: 'application/json',    // content-typeをJSONに指定する
+                error: function () { },
+                complete: function (data) {
+                    var result = eval('(' + data.responseText + ')');
+                    $('#webCalcTitleRow').after(CreateCategoryScreen(0, result));
+                },
+            })
+    }
+
+    //タブでのパネル切り替え時
+    $('#webMonthlyTab').click(() => {
+        //タブの切り替わり
+
+        //デフォルトは今月
+        var StartDate = new Date();
+        $('#webCalculateMonth').attr('value', toLocaleString(StartDate).slice(0,10));
+        $('#webCalculateMonthHelp').show();
+        var res = GetTerm(StartDate);
+        $('#webCalculateMonthText').val(res);
+        GetInitalData();
+    });
+    function CreateCategoryScreen(Depth, CategoryList) {
+        //
+        var TargetID;
+        var Hr;
+        var Padding = '';
+        var retHtml = "";
+        var TotalPrice = 0;
+        var IsTopCategory = Depth == 0;
+        //col のパディングを作る
+        for (var i = 0; i < Depth; i++)
+            Padding += '・';
+        //アイテムリストが来ることもある
+        if (!IsTopCategory &&'ItemName' in CategoryList[0]) {
+            console.log(CategoryList);
+            var Count = CategoryList.length;
+            //行を追加していく
+            for (i = 0; i < Count; i++) {
+                retHtml += '<div class="row web-top-rows" style="background-color:aquamarine" >' + Padding +
+                    '<div class="col m-1"><button type = "button" class="btn btn-warning web-item-delete" web-ItemId = "' + CategoryList[i].ItemId + '" ">削除</button >' +
+                    '<label class="form-label ml-1">' +
+                    CategoryList[i].ItemDate + '</label></div><div class="col m-1">' +
+                    '<label class="form-label">' +
+                    CategoryList[i].ItemName + '</label></div><div class="col-3 m-1">' +
+                   '<input type="text" class="form-control" readonly="readonly" value="' +
+                    CategoryList[i].ItemPrice.toLocaleString('ja-JP', { style: 'currency', currency: 'JPY' }) + '" />' +
+                    '</div></div>';
+            }
+            return retHtml;
+        }
+        //区分の展開
+        if (IsTopCategory) {
+            //既存の行を削除
+            Hr = '<hr class="web-top-hr" />';
+            TargetID = 'webCalc';
+            $('.web-top-rows').remove();
+            $('.web-top-hr').remove();
+        } else {
+            TargetID = 'webDetail';
+            Hr = '';
+        }
+        var Count = CategoryList.length;
+        //行を追加していく
+        for (i = 0; i < Count; i++) {
+            retHtml += '<div class="row web-top-rows" style="background-color:aquamarine" >' + Padding + 
+                '<div class="col m-1"><button type="button" class="btn btn-primary web-make-detail" web-depth ="' + Depth + '" >' +
+                CategoryList[i].CategoryName + '</button></div><div class="col-3 m-1">' +
+                '<input type="text" class="form-control" readonly="readonly" value="' +
+                CategoryList[i].CategotyPrice.toLocaleString('ja-JP', { style: 'currency', currency: 'JPY' }) +'" />'+
+                '</div></div>' + Hr;
+            if (IsTopCategory)
+                TotalPrice += CategoryList[i].CategotyPrice;
+        }
+        if (IsTopCategory)
+            $('#webTotalPrice').val(TotalPrice.toLocaleString('ja-JP', { style: 'currency', currency: 'JPY' }));
+       return retHtml;
+    }
+
+    $('#webCalculateMonth').change(() => {
+        if ($('#webCalculateMonth').val() == "") {
+            $('#webCalculateMonthHelp').text('集計したい月を選択して下さい');
+            return;
+        }
+        //現状の画面を初期化
+        var $TopRow = $('webCalcTitleRow');
+        $TopRow.siblings().remove();
+        $('#webCalculateMonthHelp').text('');
+        var CalcManth = new Date($('#webCalculateMonth').val());
+        $('#webCalculateMonthText').val(GetTerm(CalcManth));
+        //集計開始
+        GetInitalData();
+
+    });
+    //勘定科目のボタンクリック
+    $('body').on('click', '.web-make-detail', function () {
+        var TargetCategory = $(this).text();
+        $(this).removeClass('web-make-detail')
+        var Depth = $(this).attr("web-depth");
+        var $Target = $(this).closest('.row');
+        Depth++;
+        //Ajax で転送し、返事をもらう
+        //Jonsonデータを作成
+        var data = { Depth: Depth, TargetCategory: TargetCategory, StartDate: new Date($('#webCalcStart').val()), EndDate: new Date($('#webCalcEnd').val()) };
+        $.ajax(
+            {
+                url: '/Home/JsonGetCategoryPrice',
+                type: 'POST',
+                data: JSON.stringify(data),   // JSONの文字列に変換,   // Depthを取得
+                contentType: 'application/json',    // content-typeをJSONに指定する
+                error: function () { },
+                complete: function (data) {
+                    var result = eval('(' + data.responseText + ')');
+
+                    $Target.after(CreateCategoryScreen(Depth, result));
+                },
+            })
+
+    });
+    //削除ボタン
+    $('body').on('click', '.web-item-delete', function () {
+        var ret = confirm("アイテムを削除します。よろしいですか？");
+        if (!ret)
+            return;
+        var $Target = $(this).closest('.row');
+        $Target.remove();
+       //Ajax で転送し、返事をもらう
+        //Jonsonデータを作成
+        var data = { ItemId: $(this).attr("web-ItemId") };
+        $.ajax(
+            {
+                url: '/Home/JsonDeleteItem',
+                type: 'POST',
+                data: JSON.stringify(data),   // JSONの文字列に変換,   // Depthを取得
+                contentType: 'application/json',    // content-typeをJSONに指定する
+                error: function () { alert('失敗しました')},
+                complete: function (data) {
+                    var result = eval('(' + data.responseText + ')');
+                    alert('削除しました');
+                    $('#webCalculateMonth').change();
+                },
+            })
+    });
+
+
+    //入力に関するスクリプト
+
     //登録ボタン　→入力チェック・データ送信・クリア(とりあえず)
     $('.web-register-btn').click(function () {
         var IsNullText = false;
@@ -65,6 +256,7 @@
         $('#webMainItem').val('');
         $('#webAvailableDate').val('');
         $('#webItemPrice').val('');
+        $('.web-curb').text('false');
     };
 
     $('body').on('click', '.web-clear-btn', function () {
@@ -131,11 +323,15 @@
                     complete: function (data) {
                         var result = eval('(' + data.responseText + ')');
                         console.log("正常動作");
-                        $('#webDiv'+Depth).after(MakeCategoryDiv( Depth, result));
+                        if (Depth == 0) 
+                            $('#webDivEntry').html(MakeCategoryDiv(Depth, result));
+                        else
+                            $('#webDiv' + Depth).after(MakeCategoryDiv(Depth, result));
+
                     },
                 })
         }
-        //$('.web-curb').text('true') ;
+        $('.web-curb').text('true') ;
     });
     function MakeCategoryDiv(Depth, CategoryList) {
         const IdBase = 'webDiv';
@@ -187,6 +383,6 @@
     //戻るボタンの対策
     $(window).on("beforeunload", () => {
         var ss = $('.web-curb').text();
-        if (ss == "true") return "変更がありますが破棄して移動しますか？";
+        if ($('.web-curb').text() == "true") return "変更がありますが破棄して移動しますか？";
     });
 });

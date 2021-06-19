@@ -21,5 +21,17 @@ namespace WebExpenseBook.Models
     {
         public string ItemName { get; set; }
     }
+    public class WebJsonCategoryPrice
+    {
+        public string CategoryName { get; set; }
+        public decimal CategotyPrice { get; set; }
+    }
+    public class WebJsonItemList
+    {
+        public int ItemId { get; set; }
+        public string ItemName { get; set; }
+        public decimal ItemPrice { get; set; }
+        public string ItemDate { get; set; }
+    }
 
 }

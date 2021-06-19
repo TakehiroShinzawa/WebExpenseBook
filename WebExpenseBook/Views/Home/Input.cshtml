@@ -2,7 +2,7 @@
 @{
     ViewBag.Title = "SPAコントロール";
 }
-<h2>@ViewBag.Title</h2>
+<h2 class="mt-1">@ViewBag.Title</h2>
 <div class="web-curb">false</div>   @*ページ遷移の抑制用*@
 <div class="container" style="background-color:cornflowerblue">
     <ul id="webMainTab" class="nav nav-tabs" role="tablist">
@@ -45,6 +45,8 @@
                         </div>
                     </div>
                 </div>
+                <div class="row" id="webDivEntry" style="background-color:aqua">
+                </div>
                 <div class="row" style="background-color:aquamarine">
                     <div class="col">
                         <label for="webMainItem" class="form-label">品名</label>
@@ -83,7 +85,35 @@
             </div>
         </div>
         <div id="webMonthly" class="tab-pane" role="tabpanel" aria-labelledby="webMonthlyTab">
-            <p>こちらは月次を表示する</p>
+            <div class="container-md  mb-3">
+                <div class="row" style="background-color:aqua" id="webCalcTitleRow">
+                    <div class="col">
+                        <label for="webCalculateMonth" class="form-label">集計月選択</label>
+                        <input type="date" class="form-control" id="webCalculateMonth" aria-describedby="webCalculateMonthHelp" value="2021-04-06" />
+                        <input type="hidden" id="webCalcStart">
+                        <input type="hidden" id="webCalcEnd">
+                        <div id="webCalculateMonthHelp" class="form-text web-result-text">集計したい月を選択して下さい</div>
+                    </div>
+                    <div class="col">
+                        <label for="webCalculateMonthText" class="form-label">集計月</label>
+                        <input type="text" class="form-control" id="webCalculateMonthText" readonly="readonly">
+                    </div>
+                    <div class="col">
+                        <label for="webTotalPrice" class="form-label">経費合計</label>
+                        <input type="text" class="form-control" id="webTotalPrice" readonly="readonly">
+                    </div>
+                </div>
+                <div class="row web-top-rows" style="background-color:aquamarine" id="webCalcRow0" >
+                    <div class="col  m-1">
+                        <button type="button" class="btn btn-primary web-make-detail" web-depth ="0" id="webCalcD0">
+                            交通費
+                        </button>
+                    </div>
+                    <div class="col m-1">
+                        <input type="text" class="form-control" id="webCalcCostD0" readonly="readonly" />
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
