@@ -51,7 +51,7 @@ namespace WebExpenseBook.Controllers
                 //var sql = $"select distinct CategoryName from Categories C inner join MainItems M on M.OwnerName = @OwnerName and M.Id = C.MainItemId where C.CategoryDepth = @Depth";
                 sql = "select C.CategoryName, sum( M.ItemPrice ) CategotyPrice " +
                          "from MainItems M left join Categories C on C.MainItemId = M.Id " +
-                         "where /*M.OwnerName = @OwnerName and */ M.ItemDate between  @StartDate and @EndDate and M.IsDeleted = 0 and " +
+                         "where /*M.OwnerName = @OwnerName and */ M.ItemDate between @StartDate and @EndDate and M.IsDeleted = 0 and " +
                          "C.CategoryDepth = @Depth " +
                          "group by C.CategoryName";
             }
@@ -59,7 +59,7 @@ namespace WebExpenseBook.Controllers
             {
                 sql = "select C.CategoryName, sum( M.ItemPrice ) CategotyPrice " +
                           "from MainItems M left join Categories C on C.MainItemId = M.Id " +
-                          "where /*M.OwnerName = @OwnerName and */ M.ItemDate between  @StartDate and @EndDate and M.IsDeleted = 0 and " +
+                          "where /*M.OwnerName = @OwnerName and */ M.ItemDate between @StartDate and @EndDate and M.IsDeleted = 0 and " +
                           "C.CategoryDepth = @Depth and C.ParentName = @ParentCategory " +
                           "group by C.CategoryName";
             }
@@ -70,7 +70,7 @@ namespace WebExpenseBook.Controllers
                 return Json(dd);    //カテゴリーがあったら返す
             //残りはアイテムのはずなので、アイテムを返す
             sql = "select M.Id ItemId, CONVERT(VARCHAR, M.ItemDate,111) as ItemDate,  M.ItemName, M.ItemPrice from MainItems M left join Categories C on C.MainItemId = M.Id " +
-                    "where /*M.OwnerName = @OwnerName and */ C.CategoryDepth = @Depth and M.IsDeleted = 0 and C.CategoryName = @Category order by  M.ItemDate";
+                    "where /*M.OwnerName = @OwnerName and */ C.CategoryDepth = @Depth and M.ItemDate between @StartDate and @EndDate and M.IsDeleted = 0 and C.CategoryName = @Category order by  M.ItemDate";
             var Items = db.Database.SqlQuery<WebJsonItemList>(sql, new SqlParameter("@OwnerName", UserIp), new SqlParameter("@Depth", --Depth),
                 new SqlParameter("@StartDate", StartDate), new SqlParameter("@EndDate", EndDate), new SqlParameter("@Category", TargetCategory));
             var ItemsResult = Items.ToList();
