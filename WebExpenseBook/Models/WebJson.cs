@@ -12,6 +12,7 @@ namespace WebExpenseBook.Models
     }
     public class WebJsonItem
     {
+        public int ItemId { get; set; }
         public string ItemName { get; set; }
         public int ItemPrice { get; set; }
         public DateTime ItemDate { get; set; }

@@ -92,6 +92,7 @@
                         <input type="date" class="form-control" id="webCalculateMonth" aria-describedby="webCalculateMonthHelp" value="2021-04-06" />
                         <input type="hidden" id="webCalcStart">
                         <input type="hidden" id="webCalcEnd">
+                        <input type="hidden" id="webUpdatingItem">
                         <div id="webCalculateMonthHelp" class="form-text web-result-text">集計したい月を選択して下さい</div>
                     </div>
                     <div class="col">
@@ -113,6 +114,48 @@
                         <input type="text" class="form-control" id="webCalcCostD0" readonly="readonly" />
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--モーダル部分-->
+<div class="modal" id="webItemModal" tabindex="-1" role="dialog" aria-labelledby="webItemModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header" style="background-color:aquamarine">
+                <h5 class="modal-title" id="webItemModalLabel">勘定科目－アイテム修正</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="background-color:aqua" id="webItemModalBody">
+                <div id="webRowMake">
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <label for="webAvailableDateEdit" class="form-label">購入日</label>
+                        <input type="date" class="form-control web-require-strict" id="webAvailableDateEdit" aria-describedby="webAvailableDateHelp">
+                        <div id="webAvailableDateHelp" class="form-text">購入した日付を入れてください</div>
+                    </div>
+                    <div class="col">
+                        <label for="webItemPriceEdit" class="form-label">購入金額</label>
+                        <input type="number" class="form-control web-require-strict" id="webItemPriceEdit">
+                        <div class="web-error">整数のみ入力できます</div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <div class="col-12">
+                            <label for="webItemNameEdit" class="form-label">品名</label>
+                            <input type="search" class="form-control web-require-strict" id="webItemNameEdit" placeholder="品名">
+                            <input type="hidden" id="webItemIdEdit"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="webItemUpdate">更新</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">閉じる</button>
             </div>
         </div>
     </div>

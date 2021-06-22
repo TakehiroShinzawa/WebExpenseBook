@@ -16,6 +16,73 @@ namespace WebExpenseBook.Controllers
         private MainContext db = new MainContext();
 
         [HttpPost]
+        public async Task< ActionResult> JsonUpdateItem(WebJsonItem webJsonItem)
+        {
+            bool IsOnlyName = true;
+            using (var transaction = db.Database.BeginTransaction())
+            {
+                try
+                {
+                    int i = 0;
+                    bool IsUpdated = false;
+                    bool IsItemUpdated = false;
+                    foreach (var cate in webJsonItem.Category)
+                    {
+                        var dp = webJsonItem.Category[i++].Depth;
+                        var category = db.Categories.Single(x => x.MainItemId == webJsonItem.ItemId && x.CategoryDepth == dp);
+                        if (category.CategoryName != cate.CategoryName)
+                        {
+                            category.CategoryName = cate.CategoryName;
+                            category.UpdateAt = DateTime.Now;
+                            await db.SaveChangesAsync();
+                            IsUpdated = true;
+                            IsOnlyName = false;
+                        }
+                    }
+                    var item = db.MainItems.Single(x => x.Id == webJsonItem.ItemId);
+                    if (item.ItemName != webJsonItem.ItemName)
+                    {
+                        IsUpdated = true;
+                        IsItemUpdated = true;
+                        item.ItemName = webJsonItem.ItemName;
+                    }
+                    if (item.ItemPrice != webJsonItem.ItemPrice || item.ItemDate.ToShortDateString() != webJsonItem.ItemDate.ToShortDateString())
+                    {
+                        item.ItemPrice = webJsonItem.ItemPrice;
+                        item.ItemDate = webJsonItem.ItemDate;
+                        IsUpdated = true;
+                        IsItemUpdated = true;
+                        IsOnlyName = false;
+                    }
+                    if( IsItemUpdated)
+                        await db.SaveChangesAsync();
+                    if (IsUpdated)
+                        transaction.Commit();
+                }
+                catch (Exception e)
+                {
+                    Debug.WriteLine(e.Message);
+                    transaction.Rollback();
+                    return Json(false);
+                }
+            }
+            return Json(IsOnlyName);
+
+        }
+        [HttpPost]
+        public ActionResult JsonEditItem(int ItemId)
+        {
+            WebJsonItem webJsonItem = new WebJsonItem();
+
+            string sql = "";
+            sql = "select C.CategoryDepth Depth, C.CategoryName from Categories C " +
+                    "where C.MainItemId = @ItemId order by C.CategoryDepth";
+            var Items = db.Database.SqlQuery<WebJsonCategory>(sql, new SqlParameter("@ItemId", ItemId));
+            var ItemsResult = Items.ToList();
+            return Json(ItemsResult);
+        }
+
+        [HttpPost]
         public async Task<ActionResult> JsonDeleteItem(int ItemId)
         {
             string sql = "";
@@ -84,7 +151,7 @@ namespace WebExpenseBook.Controllers
             var UserIp = Request.UserHostAddress;
             //メインアイテムを登録する
             //時間の指定が午前０時だと何かと都合が悪いので12時に変更
-            mainitem.ItemDate.AddHours(12);
+            mainitem.ItemDate = mainitem.ItemDate.AddHours(12);
             var MainItem = new MainItem()
             {
                 ItemDate = mainitem.ItemDate,
@@ -121,11 +188,11 @@ namespace WebExpenseBook.Controllers
                             Category.CreateAt = DateTime.Now;
                             Category.UpdateAt = DateTime.Now;
                             db.Categories.Add(Category);
-                            await db.SaveChangesAsync();
                             ParentId = Category.Id;
                             ParentName = Category.CategoryName;
                         }
                     }
+                    await db.SaveChangesAsync();
                     transaction.Commit();
                 }
                 catch (Exception e)
@@ -151,34 +218,7 @@ namespace WebExpenseBook.Controllers
             var sql = $"select distinct ItemName from Categories C inner join MainItems M on M.OwnerName = @OwnerName and M.Id = C.MainItemId where CategoryName = @ItemName and c.CategoryDepth = @Depth";
             var dat = db.Database.SqlQuery<WebJsonItemOnly>(sql, new SqlParameter("@OwnerName", UserIp), new SqlParameter("@ItemName", ItemName), new SqlParameter("@Depth", Count));
             var dd = dat.ToList();
-            //var result = new List<WebJsonItemOnly>();
-            //result.Add(new WebJsonItemOnly { ItemName = "新宿⇔高尾山口"});
-            //result.Add(new WebJsonItemOnly { ItemName = "新宿⇔明大前" });
-
-            //{ ItemName = "新宿⇔高尾山口"},
-            // ItemName = "新宿⇔明大前"
-
             return Json(dd);
-
-
-            var Candidate = db.Categories.Where(
-                    x => x.CategoryName == ItemName && x.CategoryDepth == Count);
-            var ParentId = 0;
-
-            for (var j = 0; j < Count; j++)
-            {
-                var ItenNames = items[j];
-                var Candidates= db.Categories.Where(
-                    x => x.CategoryName == ItemName && x.CategoryDepth == j && x.ParentId == ParentId).FirstOrDefault();
-                //ParentId = Candidate.Id;
-                //foreach( var s in Candidate)
-                //{
-                //    ParentId = s.Id;
-                //}
-
-
-            }
-
         }
 
         [HttpPost]

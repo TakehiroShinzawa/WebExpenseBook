@@ -78,15 +78,17 @@ $(function () {
             Padding += '・';
         //アイテムリストが来ることもある
         if (!IsTopCategory &&'ItemName' in CategoryList[0]) {
-            console.log(CategoryList);
             var Count = CategoryList.length;
             //行を追加していく
             for (i = 0; i < Count; i++) {
                 retHtml += '<div class="row web-top-rows" style="background-color:aquamarine" >' + Padding +
-                    '<div class="col m-1"><button type = "button" class="btn btn-warning web-item-delete" web-ItemId = "' + CategoryList[i].ItemId + '" ">削除</button >' +
+                    '<div class="col m-1"><span class="m-1"><button type = "button" class="btn btn-warning web-item-edit" web-ItemId="' + CategoryList[i].ItemId +
+                    '" web-ItemName="' + CategoryList[i].ItemName + '" web-ItemDate="' + CategoryList[i].ItemDate +
+                    '" web-ItemPrice="' + CategoryList[i].ItemPrice + '" web-editable-item-id="webEditableItem' + i + '" >修正</button ></span>' +
+                    '<span class="m-1"><button type = "button" class="btn btn-warning web-item-delete" web-ItemId = "' + CategoryList[i].ItemId + '" ">削除</button></span>' +
                     '<label class="form-label ml-1">' +
                     CategoryList[i].ItemDate + '</label></div><div class="col m-1">' +
-                    '<label class="form-label">' +
+                    '<label class="form-label" id="webEditableItem' + i + '">' +
                     CategoryList[i].ItemName + '</label></div><div class="col-3 m-1">' +
                    '<input type="text" class="form-control" readonly="readonly" value="' +
                     CategoryList[i].ItemPrice.toLocaleString('ja-JP', { style: 'currency', currency: 'JPY' }) + '" />' +
@@ -186,6 +188,93 @@ $(function () {
                 },
             })
     });
+    //編集ボタン　
+    $('body').on('click', '.web-item-edit', function () {
+        $('#webRowMake').empty();
+        $('#webUpdatingItem').val('#' + $(this).attr('web-editable-item-id'));
+        //Ajax で転送し、返事をもらう
+        //Jonsonデータを作成
+        var param = {
+            ItemId: $(this).attr("web-ItemId"), ItemName: $(this).attr("web-ItemName")
+            , ItemDate: $(this).attr("web-ItemDate"), ItemPrice: $(this).attr("web-ItemPrice")
+        };
+
+        $.ajax(
+            {
+                url: '/Home/JsonEditItem',
+                type: 'POST',
+                data: JSON.stringify(param),   // JSONの文字列に変換,   // Depthを取得
+                contentType: 'application/json',    // content-typeをJSONに指定する
+                error: function () { alert('失敗しました');},
+                complete: function (data) {
+                    var result = eval('(' + data.responseText + ')');
+                    PrepairCategories(param, result);
+                    $('#webItemModal').modal('show');
+                },
+            })
+    });
+    //モーダル作成
+    function PrepairCategories(itemInfo, categoryList) {
+        $('#webItemModalLabel').text(categoryList[0].CategoryName + '－アイテム修正');
+        var length = categoryList.length;
+        var html = "";
+        for (var i = 1; i < length; i++) {
+            html += '<div class="row"><div class="col web-require-strict"><label for="webCategoryNameEdit' + i +
+                '" class="form-label web-require-strict">区分</label><input type="text" class="form-control" id="webCategoryNameEdit' + i +
+                '" value="' + categoryList[i].CategoryName + '"></div></div>';
+        }
+        $('#webItemNameEdit').val(itemInfo.ItemName);
+        $('#webItemPriceEdit').val(itemInfo.ItemPrice);
+        var iDate = '' + itemInfo.ItemDate;
+        iDate = iDate.replace(/\//g, '-');
+        $('#webAvailableDateEdit').val(iDate);
+        $('#webItemIdEdit').val(itemInfo.ItemId);
+        $('#webRowMake').html(html);
+    }
+    //モーダルの更新ボタン
+    $('#webItemUpdate').click( function () {
+        var IsNullText = false;
+        $('.web-require-strict').each((i, o) => {
+            $(o).removeClass('bg-warning');
+            if ($(o).val() == "" && $(o).hasClass('web-strict')) {
+                $(o).addClass('bg-warning');
+                IsNullText = true;
+            }
+        });
+        if (IsNullText) {
+            alert('入力は必須です');
+            return;
+        }
+        var categories = [];
+        var i = 1;
+        while ($('#webCategoryNameEdit' + i).length)
+            categories.push({ Depth: i, CategoryName: $('#webCategoryNameEdit' + i++).val() });
+        var param = [];
+        var param = {
+            ItemId: $('#webItemIdEdit').val(), ItemName: $('#webItemNameEdit').val(), ItemPrice: $('#webItemPriceEdit').val(), ItemDate: $('#webAvailableDateEdit').val(),
+        };
+        param.Category = categories;
+
+        $.ajax(
+            {
+                url: '/Home/JsonUpdateItem',
+                type: 'POST',
+                data: JSON.stringify(param),   // JSONの文字列に変換,   // Depthを取得
+                contentType: 'application/json',    // content-typeをJSONに指定する
+                error: function () { alert('失敗しました'); },
+                complete: function (data) {
+                    var result = eval('(' + data.responseText + ')');
+                    $('#webItemModal').modal('hide');
+                    if (result == true) {
+                        var ss = $('#webUpdatingItem').val();
+                        $($('#webUpdatingItem').val()).text(param.ItemName);
+                    } else {
+                        $('#webCalculateMonth').change();
+                    }
+                },
+            })
+    });
+
 
 
     //入力に関するスクリプト
@@ -322,7 +411,6 @@ $(function () {
                     error: function () { console.log("何らかの理由で失敗しました");},
                     complete: function (data) {
                         var result = eval('(' + data.responseText + ')');
-                        console.log("正常動作");
                         if (Depth == 0) 
                             $('#webDivEntry').html(MakeCategoryDiv(Depth, result));
                         else
