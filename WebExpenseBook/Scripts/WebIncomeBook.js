@@ -1,6 +1,6 @@
 ﻿
 $(function () {
-    Pattern = '支出';
+    Pattern = '収入';
     //集計に関するスクリプト
 
     //日付から文字列に変換する関数
@@ -38,7 +38,7 @@ $(function () {
         //勘定科目の羅列
         //Ajax で転送し、返事をもらう
         //Jonsonデータを作成
-        var data = { Depth: 0, StartDate: new Date($('#webCalcStart').val()), EndDate: new Date($('#webCalcEnd').val()), Pattern: Pattern };
+        var data = { Depth: 0, StartDate: new Date($('#webCalcStart').val()), EndDate: new Date($('#webCalcEnd').val()), Pattern: Pattern};
         $.ajax(
             {
                 url: '/Home/JsonGetCategoryPrice',

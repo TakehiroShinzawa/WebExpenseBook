@@ -23,6 +23,9 @@ namespace WebExpenseBook.Models
         [Required]
         public decimal ItemPrice { get; set; }
 
+        [StringLength(16)]
+        public string Pattern { get; set; }
+
         public DateTime CreateAt { get; set; }
 
         public bool IsDeleted { get; set; }
@@ -44,7 +47,7 @@ namespace WebExpenseBook.Models
         public int ParentId { get; set; }
 
         [Required]
-        [StringLength(32)]
+        [StringLength(128)]
         public string ParentName { get; set; }
 
 

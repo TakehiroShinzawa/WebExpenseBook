@@ -16,6 +16,7 @@ namespace WebExpenseBook.Models
         public string ItemName { get; set; }
         public int ItemPrice { get; set; }
         public DateTime ItemDate { get; set; }
+        public string Pattern { get; set; }
         public WebJsonCategory[] Category { get; set; }
     }
     public class WebJsonItemOnly
@@ -24,6 +25,7 @@ namespace WebExpenseBook.Models
     }
     public class WebJsonCategoryPrice
     {
+        public string ParentName { get; set; }
         public string CategoryName { get; set; }
         public decimal CategotyPrice { get; set; }
     }

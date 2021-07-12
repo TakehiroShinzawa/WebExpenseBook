@@ -152,6 +152,10 @@
     <Compile Include="Migrations\202106130820073_AddParentName.designer.cs">
       <DependentUpon>202106130820073_AddParentName.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202107050555049_AddPatern.cs" />
+    <Compile Include="Migrations\202107050555049_AddPatern.designer.cs">
+      <DependentUpon>202107050555049_AddPatern.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\MainContext.cs" />
     <Compile Include="Models\WebExpenseBook.cs" />
@@ -279,6 +283,7 @@
     <Content Include="Scripts\umd\popper.js" />
     <Content Include="Scripts\umd\popper.min.js" />
     <Content Include="Scripts\WebExpenseBook.js" />
+    <Content Include="Scripts\WebIncomeBook.js" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -291,7 +296,7 @@
     <Content Include="Views\Shared\Error.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
     <Content Include="Views\Home\Input.cshtml" />
-    <Content Include="Views\Home\Monthly.cshtml" />
+    <Content Include="Views\Home\Income.cshtml" />
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Scripts\umd\popper.min.js.map" />
     <Content Include="Scripts\umd\popper.js.map" />
@@ -321,6 +326,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\202106130820073_AddParentName.resx">
       <DependentUpon>202106130820073_AddParentName.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202107050555049_AddPatern.resx">
+      <DependentUpon>202107050555049_AddPatern.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

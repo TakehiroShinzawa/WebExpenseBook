@@ -1,12 +1,14 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewBag.Title - マイ ASP.NET アプリケーション</title>
     @Styles.Render("~/Content/css")
     @Scripts.Render("~/bundles/modernizr")
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
 </head>
 <body>
     <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
@@ -19,7 +21,8 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item"><a class="nav-link active" href="/Home/Index">ホーム</a></li>
-                <li class="nav-item">@Html.ActionLink("経費帳", "Input", "Home", null, new { @class = "nav-link active" })</li>
+                <li class="nav-item">@Html.ActionLink("支出帳", "Input", "Home", null, new { @class = "nav-link active" })</li>
+                <li class="nav-item">@Html.ActionLink("収入帳", "Income", "Home", null, new { @class = "nav-link active" })</li>
             </ul>
         </div>
     </nav>
@@ -27,13 +30,10 @@
         @RenderBody()
         <hr />
         <footer>
-            <p>&copy; @DateTime.Now.Year - マイ ASP.NET アプリケーション</p>
+            <p>&copy; @DateTime.Now.Year - FPA アプリケーション</p>
         </footer>
     </div>
 
-    @Scripts.Render("~/bundles/jquery")
-    @Scripts.Render("~/bundles/bootstrap")
-    @Scripts.Render("~/bundles/myjs")
     @RenderSection("scripts", required: false)
 </body>
 </html>

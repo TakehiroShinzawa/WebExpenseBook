@@ -26,17 +26,29 @@ namespace WebExpenseBook.Controllers
                     int i = 0;
                     bool IsUpdated = false;
                     bool IsItemUpdated = false;
+                    bool IsParentChanged = false;
+                    string ParentName = "";
                     foreach (var cate in webJsonItem.Category)
                     {
                         var dp = webJsonItem.Category[i++].Depth;
                         var category = db.Categories.Single(x => x.MainItemId == webJsonItem.ItemId && x.CategoryDepth == dp);
-                        if (category.CategoryName != cate.CategoryName)
+                        if (category.CategoryName != cate.CategoryName || IsParentChanged)
                         {
+                            if (IsParentChanged)
+                            {
+                                category.ParentName = ParentName;
+                                ParentName += cate.CategoryName;
+                            }
                             category.CategoryName = cate.CategoryName;
                             category.UpdateAt = DateTime.Now;
                             await db.SaveChangesAsync();
+                            if (!IsParentChanged)
+                            {
+                                ParentName = (dp == 0 ? cate.CategoryName : category.ParentName + cate.CategoryName);
+                            }
                             IsUpdated = true;
                             IsOnlyName = false;
+                            IsParentChanged = true;
                         }
                     }
                     var item = db.MainItems.Single(x => x.Id == webJsonItem.ItemId);
@@ -106,40 +118,40 @@ namespace WebExpenseBook.Controllers
             return Json(false);
         }
         [HttpPost]
-        public ActionResult JsonGetCategoryPrice(int Depth, DateTime StartDate, DateTime EndDate, string TargetCategory)
+        public ActionResult JsonGetCategoryPrice(int Depth, string ParentName, DateTime StartDate, DateTime EndDate, string TargetCategory , string Pattern)
         {
             var UserIp = Request.UserHostAddress;
             string sql = "";
 
+            //if (string.IsNullOrEmpty(ParentName))
+            //    TargetCategory = "NONE";
             if (Depth == 0)
             {
-                if (string.IsNullOrEmpty(TargetCategory))
-                    TargetCategory = "NONE";
                 //var sql = $"select distinct CategoryName from Categories C inner join MainItems M on M.OwnerName = @OwnerName and M.Id = C.MainItemId where C.CategoryDepth = @Depth";
-                sql = "select C.CategoryName, sum( M.ItemPrice ) CategotyPrice " +
+                sql = "select '' ParentName,C.CategoryName, sum( M.ItemPrice ) CategotyPrice " +
                          "from MainItems M left join Categories C on C.MainItemId = M.Id " +
                          "where /*M.OwnerName = @OwnerName and */ M.ItemDate between @StartDate and @EndDate and M.IsDeleted = 0 and " +
-                         "C.CategoryDepth = @Depth " +
+                         "M.Pattern = @Pattern and C.CategoryDepth = @Depth " +
                          "group by C.CategoryName";
             }
             else
             {
-                sql = "select C.CategoryName, sum( M.ItemPrice ) CategotyPrice " +
+                sql = "select C.ParentName, C.CategoryName, sum( M.ItemPrice ) CategotyPrice " +
                           "from MainItems M left join Categories C on C.MainItemId = M.Id " +
                           "where /*M.OwnerName = @OwnerName and */ M.ItemDate between @StartDate and @EndDate and M.IsDeleted = 0 and " +
                           "C.CategoryDepth = @Depth and C.ParentName = @ParentCategory " +
-                          "group by C.CategoryName";
+                          "group by C.ParentName, C.CategoryName";
             }
             var dat = db.Database.SqlQuery<WebJsonCategoryPrice>(sql, new SqlParameter("@OwnerName", UserIp), new SqlParameter("@Depth", Depth),
-               new SqlParameter("@StartDate", StartDate), new SqlParameter("@EndDate", EndDate), new SqlParameter("@ParentCategory", TargetCategory));
+               new SqlParameter("@StartDate", StartDate), new SqlParameter("@EndDate", EndDate), new SqlParameter("@ParentCategory", ParentName + TargetCategory), new SqlParameter("@Pattern", Pattern));
             var dd = dat.ToList();
             if (Depth == 0 || dd.Count != 0)
                 return Json(dd);    //カテゴリーがあったら返す
             //残りはアイテムのはずなので、アイテムを返す
             sql = "select M.Id ItemId, CONVERT(VARCHAR, M.ItemDate,111) as ItemDate,  M.ItemName, M.ItemPrice from MainItems M left join Categories C on C.MainItemId = M.Id " +
-                    "where /*M.OwnerName = @OwnerName and */ C.CategoryDepth = @Depth and M.ItemDate between @StartDate and @EndDate and M.IsDeleted = 0 and C.CategoryName = @Category order by  M.ItemDate";
-            var Items = db.Database.SqlQuery<WebJsonItemList>(sql, new SqlParameter("@OwnerName", UserIp), new SqlParameter("@Depth", --Depth),
-                new SqlParameter("@StartDate", StartDate), new SqlParameter("@EndDate", EndDate), new SqlParameter("@Category", TargetCategory));
+                    "where /*M.OwnerName = @OwnerName and */ C.CategoryDepth = @Depth and C.CategoryName = @CategoryName and M.ItemDate between @StartDate and @EndDate and M.IsDeleted = 0 and C.ParentName = @ParentName order by  M.ItemDate";
+            var Items = db.Database.SqlQuery<WebJsonItemList>(sql, new SqlParameter("@OwnerName", UserIp), new SqlParameter("@Depth", Depth - 1),
+                new SqlParameter("@StartDate", StartDate), new SqlParameter("@EndDate", EndDate), new SqlParameter("@ParentName", ParentName), new SqlParameter("@CategoryName", TargetCategory));
             var ItemsResult = Items.ToList();
             return Json(ItemsResult);
         }
@@ -158,6 +170,7 @@ namespace WebExpenseBook.Controllers
                 ItemName = mainitem.ItemName,
                 ItemPrice = mainitem.ItemPrice,
                 OwnerName = UserIp,
+                Pattern = mainitem.Pattern,
                 IsDeleted = false,
                 CreateAt = DateTime.Now,
                 UpdateAt = DateTime.Now
@@ -172,6 +185,7 @@ namespace WebExpenseBook.Controllers
                     var Result = MainItem.Id;
                     int Count = mainitem.Category.Length;
                     int ParentId = 0;
+                    bool IsTop = true;
                     string ParentName = "NONE";
                     //var Cotegory = new Category[Count]; 
                     for(var i = 0;i < Count;i++)
@@ -189,7 +203,13 @@ namespace WebExpenseBook.Controllers
                             Category.UpdateAt = DateTime.Now;
                             db.Categories.Add(Category);
                             ParentId = Category.Id;
-                            ParentName = Category.CategoryName;
+                            if (IsTop)
+                            {
+                                ParentName = Category.CategoryName;
+                                IsTop = false;
+                            }
+                            else
+                                ParentName += Category.CategoryName;
                         }
                     }
                     await db.SaveChangesAsync();
@@ -202,8 +222,9 @@ namespace WebExpenseBook.Controllers
                     transaction.Rollback();
                 }
             }
-
-            return Json(db.Categories.Where(x => x.CategoryDepth == 0).Select((d) => new { CategoryName = d.CategoryName }).Distinct());
+            var sql = $"select distinct CategoryName, CategoryDepth from Categories C inner join MainItems M on /* M.OwnerName = @OwnerName and */ M.Id = C.MainItemId where  c.CategoryDepth = 0 and M.Pattern = @Pattern";
+            var Catregories = db.Database.SqlQuery<WebJsonCategory>(sql, new SqlParameter("@OwnerName", UserIp), new SqlParameter("@Pattern", mainitem.Pattern));
+            return Json(Catregories.ToList());
         }
 
 
@@ -211,35 +232,43 @@ namespace WebExpenseBook.Controllers
         public ActionResult JsonItem(string[] items)
         {
             var UserIp = Request.UserHostAddress;
-            int Count = items.Length;
-            if( items[Count - 1] == "")
-                Count -=2;
-            var ItemName = items[Count];
-            var sql = $"select distinct ItemName from Categories C inner join MainItems M on M.OwnerName = @OwnerName and M.Id = C.MainItemId where CategoryName = @ItemName and c.CategoryDepth = @Depth";
-            var dat = db.Database.SqlQuery<WebJsonItemOnly>(sql, new SqlParameter("@OwnerName", UserIp), new SqlParameter("@ItemName", ItemName), new SqlParameter("@Depth", Count));
+            int Count = items.Length - 1;
+            if( items[Count] == "")
+                Count --;
+            var CategoryName = items[Count];
+            items[Count] = null;
+            var ParentName = string.Join(null, items);
+            var sql = $"select distinct M.ItemName from Categories C inner join MainItems M on /* M.OwnerName = @OwnerName and */ M.Id = C.MainItemId where  c.CategoryDepth = @Depth and C.ParentName = @ParentName and C.CategoryName = @CategoryName";
+            var dat = db.Database.SqlQuery<WebJsonItemOnly>(sql, new SqlParameter("@OwnerName", UserIp), new SqlParameter("@ParentName", ParentName), new SqlParameter("@CategoryName", CategoryName), new SqlParameter("@Depth", Count));
             var dd = dat.ToList();
             return Json(dd);
         }
 
         [HttpPost]
-        public ActionResult JsonCategory(WebJsonCategory category)
+        public ActionResult JsonCategory(string[] items,int Depth, string ParentName, string Pattern)
         {
-            //db.Categories.ToList();
-            //WebJsonCategory[] Catregories;
-            var Depth = category.Depth +1;
-            var Catregories = db.Categories.Where((x) => x.ParentName == category.CategoryName && x.CategoryDepth == Depth)
-                .Select(x => new WebJsonCategory { CategoryName = x.CategoryName, Depth = x.CategoryDepth }).Distinct();
+            int Count = items.Length - 1;
+            string CategoryName;
+            var iDepth = Depth + 1;
+            CategoryName = items[Count];
+            var UserIp = Request.UserHostAddress;
+            var sql = $"select distinct CategoryName, CategoryDepth from Categories C inner join MainItems M on /* M.OwnerName = @OwnerName and */ M.Id = C.MainItemId where  c.CategoryDepth = @Depth and C.ParentName = @ParentName　and M.Pattern = @Pattern";
+            var Catregories = db.Database.SqlQuery<WebJsonCategory>(sql, new SqlParameter("@OwnerName", UserIp), new SqlParameter("@ParentName", ParentName), new SqlParameter("@Depth", iDepth), new SqlParameter("@Pattern", Pattern));
 
-            //var i = category.Depth;
-            //var k = category.CategoryName;
-            //var sss = new List<WebJsonCategory>();
-            //if (k == "交通費")
-            //{
-            //    sss.Add(new WebJsonCategory { Depth = 1, CategoryName = "JR線" });
-            //    sss.Add(new WebJsonCategory { Depth = 1, CategoryName = "京王線" });
-            //}
+            var NameList = Catregories.ToArray();
+            bool IsItemExist = false;
+            if ( NameList.Length == 0)
+            {
+                items[Count] = "";
+                ParentName = string.Join(null, items);
+                sql = $"select top 1 M.ItemName from Categories C inner join MainItems M on /* M.OwnerName = @OwnerName and */ M.Id = C.MainItemId where  c.CategoryDepth = @Depth and C.ParentName = @ParentName and C.CategoryName = @CategoryName";
+                var dat = db.Database.SqlQuery<WebJsonItemOnly>(sql, new SqlParameter("@OwnerName", UserIp), new SqlParameter("@ParentName", ParentName), new SqlParameter("@CategoryName", CategoryName), new SqlParameter("@Depth", Depth));
+                var dd = dat.ToList();
+                IsItemExist = (dd.Count == 1);
 
-            return Json(Catregories);
+            }
+            var Result = new { Namelist = NameList, IsItemExist = IsItemExist };
+            return Json(Result);
         }
 
         public ActionResult Index()
@@ -248,19 +277,24 @@ namespace WebExpenseBook.Controllers
             return View();
         }
 
+        public ActionResult Income()
+        {
+            var UserIp = Request.UserHostAddress;
+            var sql = $"select distinct CategoryName, CategoryDepth from Categories C inner join MainItems M on /* M.OwnerName = @OwnerName and */ M.Id = C.MainItemId where  c.CategoryDepth = 0 and M.Pattern = '収入'";
+            var dat = db.Database.SqlQuery<WebJsonCategory>(sql, new SqlParameter("@OwnerName", UserIp));
+
+            return View(dat.ToList());
+        }
+
         public ActionResult Input()
         {
-            string[] result;
+            var UserIp = Request.UserHostAddress;
+            var sql = $"select distinct CategoryName, CategoryDepth from Categories C inner join MainItems M on /* M.OwnerName = @OwnerName and */ M.Id = C.MainItemId where  c.CategoryDepth = 0 and M.Pattern = '支出'";
+            var dat = db.Database.SqlQuery<WebJsonCategory>(sql, new SqlParameter("@OwnerName", UserIp));
 
-            //result = new string[]
-            //{   "消耗品",
-            //    "交通費",
-            //    "公租公課費",
-            //    "交際費"
-            //};
-            var sss = db.Categories.Where(x => x.CategoryDepth == 0).Select((d) => new WebJsonCategory { CategoryName = d.CategoryName, Depth = 0 }).Distinct();
+            var sss = db.Categories.Where(x => x.CategoryDepth == 0 ).Select((d) => new WebJsonCategory { CategoryName = d.CategoryName, Depth = 0 }).Distinct();
 
-            return View(sss);
+            return View(dat.ToList());
         }
 
         public ActionResult Monthly()

@@ -1,6 +1,6 @@
 ﻿@model IEnumerable<WebExpenseBook.Models.WebJsonCategory>
 @{
-    ViewBag.Title = "SPAコントロール";
+    ViewBag.Title = "収入の部";
 }
 <h2 class="mt-1">@ViewBag.Title</h2>
 <div class="web-curb">false</div>   @*ページ遷移の抑制用*@
@@ -24,12 +24,12 @@
             <div class="container-md  mb-3">
                 <div class="row" style="background-color:aqua">
                     <div class="col">
-                        <label for="webAvailableDate" class="form-label">購入日</label>
+                        <label for="webAvailableDate" class="form-label">入金日</label>
                         <input type="date" class="form-control web-require web-strict" id="webAvailableDate" aria-describedby="webAvailableDateHelp">
-                        <div id="webAvailableDateHelp" class="form-text">購入した日付を入れてください</div>
+                        <div id="webAvailableDateHelp" class="form-text">入金した日付を入れてください</div>
                     </div>
                     <div class="col" id="webDiv0">
-                        <label for="webCategoryD0" class="form-label">勘定科目</label>
+                        <label for="webCategoryD0" class="form-label">収入種別</label>
                         <input type="search" class="form-control web-require web-strict" web-parent-name="" id="webCategoryD0" placeholder="区分名">
                         <div class="btn-group dropend">
                             <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
@@ -61,10 +61,10 @@
                         </div>
                     </div>
                     <div class="col">
-                        <label for="webItemPrice" class="form-label">購入金額</label>
+                        <label for="webItemPrice" class="form-label">入金金額</label>
                         <input type="number" class="form-control web-require web-strict" id="webItemPrice" aria-describedby="webAvailablePriceHelp">
                         <div class="web-error">整数のみ入力できます</div>
-                        <div id="webAvailablePriceHelp" class="form-text">購入した金額を入れてください</div>
+                        <div id="webAvailablePriceHelp" class="form-text">入金した金額を入れてください</div>
                     </div>
                 </div>
                 <div class="row">
@@ -137,12 +137,12 @@
                 </div>
                 <div class="row">
                     <div class="col">
-                        <label for="webAvailableDateEdit" class="form-label">購入日</label>
+                        <label for="webAvailableDateEdit" class="form-label">入金日</label>
                         <input type="date" class="form-control web-require-strict" id="webAvailableDateEdit" aria-describedby="webAvailableDateHelp">
-                        <div id="webAvailableDateHelp" class="form-text">購入した日付を入れてください</div>
+                        <div id="webAvailableDateHelp" class="form-text">入金した日付を入れてください</div>
                     </div>
                     <div class="col">
-                        <label for="webItemPriceEdit" class="form-label">購入金額</label>
+                        <label for="webItemPriceEdit" class="form-label">入金金額</label>
                         <input type="number" class="form-control web-require-strict" id="webItemPriceEdit">
                         <div class="web-error">整数のみ入力できます</div>
                     </div>
@@ -189,8 +189,8 @@
                         {
                             <button type="button" class="btn btn-primary m-1 web-selected-month" data-dismiss="modal" month="@i">
                                 @Html.Raw("&nbsp;" + (i < 10 ? string.Format("&nbsp;{0}月", i) : string.Format("{0}月", i)))
-                        </button>
-                    }
+                            </button>
+                        }
                     </div>
                 </div>
             </div>
@@ -200,4 +200,4 @@
         </div>
     </div>
 </div>
-@Scripts.Render("~/bundles/myjs")
+@Scripts.Render("~/bundles/myjs2")
