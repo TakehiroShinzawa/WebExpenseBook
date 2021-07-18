@@ -21,10 +21,13 @@ namespace WebExpenseBook
 
             bundles.Add(new ScriptBundle("~/bundles/bootstrap").Include(
                       "~/Scripts/bootstrap.bundle.min.js"));
-            bundles.Add(new ScriptBundle("~/bundles/myjs").Include(
-                      "~/Scripts/WebExpenseBook.js"));
-            bundles.Add(new ScriptBundle("~/bundles/myjs2").Include(
-                      "~/Scripts/WebIncomeBook.js"));
+
+            bundles.Add(new ScriptBundle("~/bundles/myIncome").Include(
+                      "~/Scripts/library.js",
+                      "~/Scripts/Income.js"));
+            bundles.Add(new ScriptBundle("~/bundles/myPayment").Include(
+                      "~/Scripts/library.js",
+                      "~/Scripts/Payment.js"));
             bundles.Add(new StyleBundle("~/Content/css").Include(
                       "~/Content/bootstrap.css",
                       "~/Content/site.css"));

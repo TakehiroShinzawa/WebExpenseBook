@@ -146,6 +146,7 @@ $(function () {
         $('#webCalculateMonth').attr('value', toLocaleString(td).slice(0, 10));
         $('#webCalculateMonth').change();
     }
+    //
     $('#webCalculateMonth').change(() => {
         //現状の画面を初期化
         var $TopRow = $('webCalcTitleRow');

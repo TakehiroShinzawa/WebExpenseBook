@@ -123,6 +123,7 @@
     </div>
 </div>
 <!--編集モーダル部分-->
+<button type="button" id="webItemModalShow" class="btn web-unvisible" data-toggle="modal" data-target="#webItemModal"></button>
 <div class="modal" id="webItemModal" tabindex="-1" role="dialog" aria-labelledby="webItemModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
@@ -159,12 +160,13 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" id="webItemUpdate">更新</button>
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">閉じる</button>
+                <button type="button" class="btn btn-secondary" id="webItemModalClose" data-dismiss="modal">閉じる</button>
             </div>
         </div>
     </div>
 </div>
 <!--年月モーダル部分-->
+<button type="button" id="webDateModalShow" class="btn web-unvisible" data-toggle="modal" data-target="#webDateModal"></button>
 <div class="modal" id="webDateModal" tabindex="-1" role="dialog" aria-labelledby="webDateModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-sm" role="document">
         <div class="modal-content">
@@ -189,8 +191,8 @@
                         {
                             <button type="button" class="btn btn-primary m-1 web-selected-month" data-dismiss="modal" month="@i">
                                 @Html.Raw("&nbsp;" + (i < 10 ? string.Format("&nbsp;{0}月", i) : string.Format("{0}月", i)))
-                        </button>
-                    }
+                            </button>
+                        }
                     </div>
                 </div>
             </div>
@@ -200,4 +202,4 @@
         </div>
     </div>
 </div>
-@Scripts.Render("~/bundles/myjs")
+@Scripts.Render("~/bundles/myPayment")

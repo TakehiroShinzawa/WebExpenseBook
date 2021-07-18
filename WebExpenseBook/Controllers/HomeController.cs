@@ -41,10 +41,11 @@ namespace WebExpenseBook.Controllers
                             }
                             category.CategoryName = cate.CategoryName;
                             category.UpdateAt = DateTime.Now;
+                            var asyncGuard = category.ParentName;   //非同期処理で更新処理を追い越した時の保険
                             await db.SaveChangesAsync();
                             if (!IsParentChanged)
                             {
-                                ParentName = (dp == 0 ? cate.CategoryName : category.ParentName + cate.CategoryName);
+                                ParentName = (dp == 0 ? cate.CategoryName : asyncGuard + cate.CategoryName);
                             }
                             IsUpdated = true;
                             IsOnlyName = false;
@@ -124,7 +125,7 @@ namespace WebExpenseBook.Controllers
             string sql = "";
 
             //if (string.IsNullOrEmpty(ParentName))
-            //    TargetCategory = "NONE";
+            //    TargetCategory = "";
             if (Depth == 0)
             {
                 //var sql = $"select distinct CategoryName from Categories C inner join MainItems M on M.OwnerName = @OwnerName and M.Id = C.MainItemId where C.CategoryDepth = @Depth";
@@ -245,29 +246,27 @@ namespace WebExpenseBook.Controllers
         }
 
         [HttpPost]
-        public ActionResult JsonCategory(string[] items,int Depth, string ParentName, string Pattern)
+        public ActionResult JsonCategory(WebGetChildCategory category)
         {
-            int Count = items.Length - 1;
-            string CategoryName;
-            var iDepth = Depth + 1;
-            CategoryName = items[Count];
+            var iDepth = category.Depth + 1;
             var UserIp = Request.UserHostAddress;
+            if (string.IsNullOrEmpty(category.ParentName))
+                category.ParentName = "";
             var sql = $"select distinct CategoryName, CategoryDepth from Categories C inner join MainItems M on /* M.OwnerName = @OwnerName and */ M.Id = C.MainItemId where  c.CategoryDepth = @Depth and C.ParentName = @ParentName　and M.Pattern = @Pattern";
-            var Catregories = db.Database.SqlQuery<WebJsonCategory>(sql, new SqlParameter("@OwnerName", UserIp), new SqlParameter("@ParentName", ParentName), new SqlParameter("@Depth", iDepth), new SqlParameter("@Pattern", Pattern));
+            var Catregories = db.Database.SqlQuery<WebJsonCategory>(sql, new SqlParameter("@OwnerName", UserIp), new SqlParameter("@ParentName", category.ParentName + category.CategoryName), new SqlParameter("@Depth", iDepth), new SqlParameter("@Pattern", category.Pattern));
 
             var NameList = Catregories.ToArray();
             bool IsItemExist = false;
             if ( NameList.Length == 0)
             {
-                items[Count] = "";
-                ParentName = string.Join(null, items);
+                var ParentName = category.ParentName;
                 sql = $"select top 1 M.ItemName from Categories C inner join MainItems M on /* M.OwnerName = @OwnerName and */ M.Id = C.MainItemId where  c.CategoryDepth = @Depth and C.ParentName = @ParentName and C.CategoryName = @CategoryName";
-                var dat = db.Database.SqlQuery<WebJsonItemOnly>(sql, new SqlParameter("@OwnerName", UserIp), new SqlParameter("@ParentName", ParentName), new SqlParameter("@CategoryName", CategoryName), new SqlParameter("@Depth", Depth));
+                var dat = db.Database.SqlQuery<WebJsonItemOnly>(sql, new SqlParameter("@OwnerName", UserIp), new SqlParameter("@ParentName", category.ParentName), new SqlParameter("@CategoryName", category.CategoryName), new SqlParameter("@Depth", category.Depth));
                 var dd = dat.ToList();
                 IsItemExist = (dd.Count == 1);
 
             }
-            var Result = new { Namelist = NameList, IsItemExist = IsItemExist };
+            var Result = new WebCategoryListWithItemInfo { Category = NameList, IsItemExist = IsItemExist };
             return Json(Result);
         }
 

@@ -47,7 +47,7 @@ namespace WebExpenseBook.Models
         public int ParentId { get; set; }
 
         [Required]
-        [StringLength(128)]
+        [StringLength(256)]
         public string ParentName { get; set; }
 
 

@@ -36,5 +36,16 @@ namespace WebExpenseBook.Models
         public decimal ItemPrice { get; set; }
         public string ItemDate { get; set; }
     }
-
+    public class WebGetChildCategory
+    {
+        public int Depth { get; set; }
+        public string ParentName { get; set; }
+        public string CategoryName { get; set; }
+        public string Pattern { get; set; }
+    }
+    public class WebCategoryListWithItemInfo
+    {
+        public WebJsonCategory[] Category { get; set; }
+        public bool IsItemExist { get; set; }
+    }
 }

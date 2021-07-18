@@ -32,6 +32,9 @@ textarea {
 .web-result-text {
     display: none;
 }
+web-unvisible{
+    display: none;
+}
 /*エラーの制御*/
 /* デフォルトでは非表示 */
 .web-error {
