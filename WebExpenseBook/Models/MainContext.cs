@@ -23,7 +23,8 @@
         // public virtual DbSet<MyEntity> MyEntities { get; set; }
         public DbSet<MainItem> MainItems { get; set; }
         public DbSet<Category> Categories { get; set; }
-
+        public DbSet<ChatDetail> ChatDetails { get; set; }
+        public DbSet<RoomInfo> RoomInfos { get; set; }
     }
 
     //public class MyEntity

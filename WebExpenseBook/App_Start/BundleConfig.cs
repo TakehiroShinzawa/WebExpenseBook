@@ -28,8 +28,12 @@ namespace WebExpenseBook
             bundles.Add(new ScriptBundle("~/bundles/myPayment").Include(
                       "~/Scripts/library.js",
                       "~/Scripts/Payment.js"));
+            bundles.Add(new ScriptBundle("~/bundles/myChat").Include(
+                      "~/Scripts/chat.js",
+                      "~/Scripts/MyChat.js"));
             bundles.Add(new StyleBundle("~/Content/css").Include(
                       "~/Content/bootstrap.css",
+                      "~/Content/style.css",
                       "~/Content/site.css"));
         }
     }

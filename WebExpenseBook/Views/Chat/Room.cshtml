@@ -1,0 +1,142 @@
+﻿@model IEnumerable<WebExpenseBook.Models.RoomInfo>
+
+@{
+    ViewBag.Title = "Chat";
+}
+<h2>Chat</h2>
+
+<h1>チャット</h1>
+<hr />
+<div id="webSelectRoom">
+    <div align="center">
+        <div class="form-group">
+            <label>開設者:<input type="text" id="webMakeOwnerName" placeholder="@ViewBag.DefaulCreatorName" /></label>
+            <label>新規作成:<input type="text" id="webMakeRoomName" placeholder="ルーム名" /></label>
+            <button id="webMakeRoom" class="btn btn-primary">作成</button>
+        </div>
+    </div>
+    <hr />
+
+    <div align="left">
+        @foreach (var data in Model)
+        {
+            string RoomId = "webRoomId" + data.Id;
+            <div>
+                <label>開設者<input value="@data.Name" disabled="disabled" /></label>
+                <label>ルーム名<input value="@data.RoomName" disabled="disabled" class="web-chat-room-name" /></label>
+                <label>最新コメント<input value="@data.LastCommntTime.ToString("yyyy/M/d H:mm:ss")" disabled="disabled" /></label>
+                <button class="btn btn-primary web-chat-enter" id="@RoomId">入室</button>
+            </div>
+        }
+    </div>
+</div>
+<div id="webMainChat" class="web-unvisible">
+    <!-- ▼LINE風ここから -->
+    <div class="line__container">
+        <!-- タイトル -->
+        <div class="line__title" id="webChatTitle">
+            うさきち友の会
+        </div>
+
+        <!-- ▼会話エリア scrollを外すと高さ固定解除 -->
+        <div id="webChatContents" class="line__contents scroll">
+
+            <!-- 相手の吹き出し -->
+            <div class="line__left webChatMessage">
+                <figure>
+                    <img src="~/stamp/icon.png" />
+                </figure>
+                <div class="line__left-text">
+                    <div class="name">うさきち</div>
+                    <div class="text">ねぇねぇ、帰ってくるのおそいんだけど！！今どこいまどこいまどこーー</div>
+                </div>
+            </div>
+
+            <!-- 相手のスタンプ -->
+            <div class="line__left webChatMessage">
+                <div class="stamp"><img src="~/stamp/13.png" /></div>
+            </div>
+
+            <!-- 相手の吹き出し -->
+            <div class="line__left webChatMessage">
+                <figure>
+                    <img src="~/stamp/icon.png" />
+                </figure>
+                <div class="line__left-text">
+                    <div class="name">うさきち</div>
+                    <div class="text">今から帰るよー</div>
+                </div>
+            </div>
+
+            <!-- 自分の吹き出し -->
+            <div class="line__right webChatMessage">
+                <div class="text">了解！寝過ごさないようにだよお風呂ためとこ</div>
+                <span class="date">既読<br>0:30</span>
+            </div>
+
+            <!-- 自分のスタンプ -->
+            <div class="line__right webChatMessage">
+                <div class="stamp"><img src="~/stamp/22.png" /></div>
+                <span class="date">既読<br>0:30</span>
+            </div>
+
+        </div>
+        <!--　▲会話エリア ここまで -->
+    </div>
+    <!--　▲LINE風ここまで -->
+    <div class="line__container">
+        <div class="mx-auto">
+            <input type="text" id="webChatMessage" />
+            <input type="button" id="webChatSendMessage" value="Send" />
+            <input type="button" id="webChatSelectStamp" value="Stamp" />
+            <input type="hidden" id="webChatDisplayname" />
+        </div>
+        <ul id="discussion">
+        </ul>
+    </div>
+    <hr />
+    <p>"ナコさんのブログ"より引用</p>
+</div>
+<!--スタンプモーダル部分-->
+<button type="button" id="webChatModalShow" class="btn web-unvisible" data-toggle="modal" data-target="#webChatModal"></button>
+<div class="modal" id="webChatModal" tabindex="-1" role="dialog" aria-labelledby="webChatModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-scrollable" role="document">
+        <div class="modal-content">
+            <div class="modal-header" style="background-color:aquamarine">
+                <h5 class="modal-title" id="webChatModalLabel">送信するスタンプを選択</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="background-color:aqua" id="webChatModalBody">
+                <div class="row">
+                    <div class="col">
+                        <label for="webTargetYear" class="form-label">スタンプ一覧</label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        @for (int i = 0; i < ViewBag.PictPath.Length; i++)
+                        {
+                            <button type="button"><img src="@ViewBag.PictPath[i]" data-dismiss="modal" class="web-img-thumbnail" /></button>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">閉じる</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <!--Script references. -->
+    <!--The jQuery library is required and is referenced by default in _Layout.cshtml. -->
+    <!--Reference the SignalR library. -->
+    <script src="/Scripts/jquery.signalR-2.2.2.min.js"></script>
+    <!--Reference the autogenerated SignalR hub script. -->
+    <script src="~/signalr/hubs"></script>
+    <!--SignalR script to update the chat page and send messages.-->
+}
+@Scripts.Render("~/bundles/myChat")

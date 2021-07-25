@@ -1,36 +1,4 @@
-var Utilitities = /** @class */ (function () {
-    function Utilitities() {
-    }
-    Utilitities.prototype.ToLocalString = function (date) {
-        return [
-            date.getFullYear(),
-            ('0' + (date.getMonth() + 1)).slice(-2),
-            ('0' + date.getDate()).slice(-2)
-        ].join('-') + ' '
-            + date.toLocaleTimeString();
-    };
-    Utilitities.prototype.DateStartEnd = function (StartDate, EndDate) {
-        StartDate.setHours(0);
-        StartDate.setMinutes(0);
-        StartDate.setSeconds(0);
-        EndDate.setHours(23);
-        EndDate.setMinutes(59);
-        EndDate.setSeconds(59);
-    };
-    Utilitities.prototype.GetTerm = function (TargetMonth) {
-        var StartDate = new Date(TargetMonth);
-        StartDate.setDate(1);
-        var EndDate = new Date(TargetMonth);
-        EndDate.setMonth(EndDate.getMonth() + 1);
-        EndDate.setDate(0);
-        this.DateStartEnd(StartDate, EndDate);
-        //開始終了の保存
-        $('.webCalcStart').val(this.ToLocalString(StartDate).substr(0, 10));
-        $('.webCalcEnd').val(this.ToLocalString(EndDate).substr(0, 10));
-        return StartDate.getFullYear() + '年' + (StartDate.getMonth() + 1) + '月度';
-    };
-    return Utilitities;
-}());
+/// <reference path="./library.d.ts" />
 var PageControll = /** @class */ (function () {
     function PageControll(Pattern) {
         var _this = this;
@@ -184,8 +152,8 @@ var PageControll = /** @class */ (function () {
                     var result = eval('(' + data.responseText + ')');
                     $('#webItemModalClose').click();
                     if (result == true) {
-                        var ss = $('#webUpdatingItem').val().toString();
-                        $($(ss).text(param.ItemName));
+                        var ss_1 = $('#webUpdatingItem').val().toString();
+                        $($(ss_1).text(param.ItemName));
                     }
                     else {
                         $('#webCalculateMonth').change();

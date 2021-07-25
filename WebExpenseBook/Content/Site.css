@@ -32,7 +32,7 @@ textarea {
 .web-result-text {
     display: none;
 }
-web-unvisible{
+.web-unvisible{
     display: none;
 }
 /*エラーの制御*/
@@ -48,4 +48,17 @@ input:invalid + .web-error {
     display: block;
     color: red;
     font-size: 0.9em;
+}
+
+
+/*チャット部分のCSS*/
+#webChatMessage {
+    width: 400px;
+}
+
+/* 正方形を用意 */
+.web-img-thumbnail {
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
 }
